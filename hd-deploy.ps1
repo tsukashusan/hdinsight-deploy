@@ -1,4 +1,5 @@
 # Login to your Azure subscription
+Login-AzureRmAccount
 # Is there an active Azure subscription?
 $sub = Get-AzureRmSubscription -ErrorAction SilentlyContinue
 if(-not($sub))
@@ -40,10 +41,14 @@ $httpCredential = Get-Credential -Message "Enter Cluster login credentials" -Use
 $sshCredentials = Get-Credential -Message "Enter SSH user credentials"
 
 # Default cluster size (# of worker nodes), version, type, and OS
-$clusterSizeInNodes = "4"
+$clusterSizeInNodes = 4
+$headNodeSize = "Standard_D13_V2"
+$workerNodeSize = "Standard_D14_V2"
+$zookeeperNodeSize = "Standard_A1"
 $clusterVersion = "3.6"
-$clusterType = "Hadoop"
+$clusterType = "INTERACTIVEHIVE" # INTERACTIVEHIVE or spark or ...
 $clusterOS = "Linux"
+$sshPublicKey = "<public key>" 
 # Set the storage container name to the cluster name
 $defaultBlobContainerName = $clusterName
 
@@ -57,6 +62,9 @@ New-AzureRmHDInsightCluster `
     -ClusterName $clusterName `
     -Location $location `
     -ClusterSizeInNodes $clusterSizeInNodes `
+    -HeadNodeSize $headNodeSize `
+    -WorkerNodeSize $workerNodeSize `
+    -ZookeeperNodeSize $zookeeperNodeSize `
     -ClusterType $clusterType `
     -OSType $clusterOS `
     -Version $clusterVersion `
@@ -64,4 +72,5 @@ New-AzureRmHDInsightCluster `
     -DefaultStorageAccountName "$defaultStorageAccountName.blob.core.windows.net" `
     -DefaultStorageAccountKey $defaultStorageAccountKey `
     -DefaultStorageContainer $clusterName `
-    -SshCredential $sshCredentials
+    -SshCredential $sshCredentials `
+    -SshPublicKey $sshPublicKey
