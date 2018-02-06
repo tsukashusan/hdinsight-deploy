@@ -24,7 +24,7 @@ $defaultStorageAccountName = Read-Host -Prompt "Enter the name of the storage ac
 New-AzureRmStorageAccount `
     -ResourceGroupName $resourceGroupName `
     -Name $defaultStorageAccountName `
-    -Type Standard_LRS `
+    -SkuName "Standard_LRS" `
     -Location $location
 $defaultStorageAccountKey = (Get-AzureRmStorageAccountKey `
                                 -ResourceGroupName $resourceGroupName `
