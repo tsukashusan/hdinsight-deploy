@@ -71,9 +71,9 @@ $headNodeSize = "Standard_D13_V2"
 $workerNodeSize = "Standard_D14_V2"
 $zookeeperNodeSize = "Standard_A1"
 $clusterVersion = "3.6"
-$clusterType = "INTERACTIVEHIVE" # INTERACTIVEHIVE or SPARK or ...
+$clusterType = "HADOOP" # INTERACTIVEHIVE or SPARK or ...
 $clusterOS = "Linux"
-$sshPublicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwTXfsS4+FRigKOYxWt9NYIQ2nSEA+dRu40d2+gkYEaZEuXpTL1VO+PNHzibC9v6zKwBD2bTyvCGb88/ybB6uKicUKlZhNKZs+tSvyrhgF+15Xh/3K1gS+ZAGszt3xUBHPynM4HcOU/anx32zO+lHCRUDPkbSeRlXzUsUJ0tC0aoye9kQsh96jF9Z2OrTPL42eLmLtK+uVNHwQvrhmuYrRAdlTM1we6Brf0AqeX8t1qNTMF9oURNSAFL5S21V+gYQlXIflUSEoFpHEWy/I9Drt6OREW6alxbuTHTw8LFk0E4yIWuOUXgYsnJt84W0EElyip7LJyzEtdg06NSeVhxSB" 
+$sshPublicKey = "<publicKey>" 
 # Set the storage container name to the cluster name
 $defaultBlobContainerName = $clusterName
 
