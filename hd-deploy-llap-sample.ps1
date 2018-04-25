@@ -67,8 +67,8 @@ $sshCredentials = New-Object System.Management.Automation.PSCredential($sshUserN
 
 # Default cluster size (# of worker nodes), version, type, and OS
 $clusterSizeInNodes = 4
-$headNodeSize = "Standard_D12_V2"
-$workerNodeSize = "Standard_D12_V2"
+$headNodeSize = "Standard_D13_V2"
+$workerNodeSize = "Standard_D14_V2"
 $zookeeperNodeSize = "Standard_A1"
 $clusterVersion = "3.6"
 $clusterType = "INTERACTIVEHIVE" # INTERACTIVEHIVE or SPARK or ...
@@ -85,7 +85,7 @@ New-AzureStorageContainer `
 New-AzureStorageContainer `
     -Name $defaultBlobContainerName -Context $jarStorageContext -Permission Container
 
-$localFileDirectory = "<localFileDirectory>"
+$localFileDirectory = "<Jar File Directory>"
 
 $blobName = "hivemall-core-0.4.2-rc.2-with-dependencies.jar"
 $localFile = $localFileDirectory + $blobName
