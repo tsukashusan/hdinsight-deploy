@@ -85,7 +85,7 @@ New-AzureStorageContainer `
 New-AzureStorageContainer `
     -Name $defaultBlobContainerName -Context $jarStorageContext -Permission Container
 
-$localFileDirectory = "C:\Users\shtsukam\git\hdinsight-deploy\\"
+$localFileDirectory = "<localFileDirectory>"
 
 $blobName = "hivemall-core-0.4.2-rc.2-with-dependencies.jar"
 $localFile = $localFileDirectory + $blobName
