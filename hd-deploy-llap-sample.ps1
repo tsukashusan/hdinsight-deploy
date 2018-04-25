@@ -71,7 +71,7 @@ $headNodeSize = "Standard_D12_V2"
 $workerNodeSize = "Standard_D12_V2"
 $zookeeperNodeSize = "Standard_A1"
 $clusterVersion = "3.6"
-$clusterType = "HADOOP" # INTERACTIVEHIVE or SPARK or ...
+$clusterType = "INTERACTIVEHIVE" # INTERACTIVEHIVE or SPARK or ...
 $clusterOS = "Linux"
 $sshPublicKey = "<publicKey>" 
 # Set the storage container name to the cluster name
