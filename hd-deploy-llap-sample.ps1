@@ -95,7 +95,7 @@ Set-AzureStorageBlobContent -File $localFile `
     -Blob $blobName `
     -Context $jarStorageContext 
 
-$scriptActionURI = "https://<storageaccount>.blob.core.windows.net/linuxsetupcustomhivelibsv01/setup-customhivelibs-v01.sh"
+$scriptActionURI = "https://hdiconfigactions.blob.core.windows.net/linuxsetupcustomhivelibsv01/setup-customhivelibs-v01.sh"
 $scriptActionParameters = [string]::Join("", "wasbs://", $defaultBlobContainerName, "@", $jarStorageAccountName, ".blob.core.windows.net/") 
 
 $workerScriptActionName = "jardeployToWorker"
