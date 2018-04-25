@@ -55,12 +55,12 @@ $clusterName = Read-Host -Prompt "Enter the name of the HDInsight cluster"
 # SSH user is used to remotely connect to the cluster using SSH clients
 #$sshCredentials = Get-Credential -Message "Enter SSH user credentials"
 
-$httpUserName = "admin"
+$httpUserName = "<userName>"
 $httpPassword = "<password>"
 $httpPW = ConvertTo-SecureString -String $httpPassword -AsPlainText -Force
 $httpCredential = New-Object System.Management.Automation.PSCredential($httpUserName, $httpPW)
 
-$sshUserName = "sshuser"
+$sshUserName = "<userName>"
 $sshPassword = "<password>"
 $sshPW = ConvertTo-SecureString -String $sshPassword -AsPlainText -Force
 $sshCredentials = New-Object System.Management.Automation.PSCredential($sshUserName, $sshPW)
