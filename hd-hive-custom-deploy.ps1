@@ -55,13 +55,13 @@ $clusterName = Read-Host -Prompt "Enter the name of the HDInsight cluster"
 # SSH user is used to remotely connect to the cluster using SSH clients
 #$sshCredentials = Get-Credential -Message "Enter SSH user credentials"
 
-$httpUserName = "<userName>"
-$httpPassword = "<password>"
+$httpUserName = "admin"
+$httpPassword = "1qaz@wsx3edC"
 $httpPW = ConvertTo-SecureString -String $httpPassword -AsPlainText -Force
 $httpCredential = New-Object System.Management.Automation.PSCredential($httpUserName, $httpPW)
 
-$sshUserName = "<userName>"
-$sshPassword = "<password>"
+$sshUserName = "sshuser"
+$sshPassword = "1qaz@wsx3edC"
 $sshPW = ConvertTo-SecureString -String $sshPassword -AsPlainText -Force
 $sshCredentials = New-Object System.Management.Automation.PSCredential($sshUserName, $sshPW)
 
@@ -71,9 +71,9 @@ $headNodeSize = "Standard_D13_V2"
 $workerNodeSize = "Standard_D14_V2"
 $zookeeperNodeSize = "Standard_A1"
 $clusterVersion = "3.6"
-$clusterType = "HADOOP" # INTERACTIVEHIVE or SPARK or ...
+$clusterType = "INTERACTIVEHIVE" # INTERACTIVEHIVE or SPARK or ...
 $clusterOS = "Linux"
-$sshPublicKey = "<publicKey>" 
+$sshPublicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwTXfsS4+FRigKOYxWt9NYIQ2nSEA+dRu40d2+gkYEaZEuXpTL1VO+PNHzibC9v6zKwBD2bTyvCGb88/ybB6uKicUKlZhNKZs+tSvyrhgF+15Xh/3K1gS+ZAGszt3xUBHPynM4HcOU/anx32zO+lHCRUDPkbSeRlXzUsUJ0tC0aoye9kQsh96jF9Z2OrTPL42eLmLtK+uVNHwQvrhmuYrRAdlTM1we6Brf0AqeX8t1qNTMF9oURNSAFL5S21V+gYQlXIflUSEoFpHEWy/I9Drt6OREW6alxbuTHTw8LFk0E4yIWuOUXgYsnJt84W0EElyip7LJyzEtdg06NSeVhxSB imported-openssh-key" 
 # Set the storage container name to the cluster name
 $defaultBlobContainerName = $clusterName
 
@@ -85,9 +85,9 @@ New-AzureStorageContainer `
 New-AzureStorageContainer `
     -Name $defaultBlobContainerName -Context $jarStorageContext -Permission Container
 
-$localFileDirectory = "<Jar File Directory>"
+$localFileDirectory = "C:\\Users\\shtsukam\\Documents\\git\\hdinsight-deploy\\"
 
-$blobName = "<JarFileName>"
+$blobName = "csv-serde-1.1.3-1.2.1.jar"
 $localFile = $localFileDirectory + $blobName
 
 Set-AzureStorageBlobContent -File $localFile `

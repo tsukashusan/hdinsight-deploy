@@ -26,6 +26,7 @@ New-AzureRmStorageAccount `
     -Name $defaultStorageAccountName `
     -SkuName "Standard_LRS" `
     -Location $location
+
 $defaultStorageAccountKey = (Get-AzureRmStorageAccountKey `
                                 -ResourceGroupName $resourceGroupName `
                                 -Name $defaultStorageAccountName)[0].Value
@@ -33,7 +34,20 @@ $defaultStorageContext = New-AzureStorageContext `
                                 -StorageAccountName $defaultStorageAccountName `
                                 -StorageAccountKey $defaultStorageAccountKey
 
+$jarStorageAccountName = Read-Host -Prompt "Enter the name of the JAR deploy storage account"
+# Create an Azure storae account and container
+New-AzureRmStorageAccount `
+    -ResourceGroupName $resourceGroupName `
+    -Name $jarStorageAccountName `
+    -SkuName "Standard_LRS" `
+    -Location $location
+$jarStorageAccountKey = (Get-AzureRmStorageAccountKey `
+                            -ResourceGroupName $resourceGroupName `
+                            -Name $jarStorageAccountName)[0].Value
 
+$jarStorageContext = New-AzureStorageContext `
+                            -StorageAccountName $jarStorageAccountName `
+                            -StorageAccountKey $jarStorageAccountKey
                             # Get information for the HDInsight cluster
 $clusterName = Read-Host -Prompt "Enter the name of the HDInsight cluster"
 
@@ -64,6 +78,26 @@ New-AzureStorageContainer `
 
 #$component = New-Object 'System.Collections.Generic.Dictionary[string, string]'
 #$component.spark = "2.2"
+# Create a blob container. This holds the default data store for the cluster.
+New-AzureStorageContainer `
+    -Name $defaultBlobContainerName -Context $jarStorageContext -Permission Container
+
+$localFileDirectory = "<LocalDirectory>"
+
+$blobName = "<JarFileName>"
+$localFile = $localFileDirectory + $blobName
+
+Set-AzureStorageBlobContent -File $localFile `
+    -Container $defaultBlobContainerName `
+    -Blob $blobName `
+    -Context $jarStorageContext 
+
+$scriptActionURI = "https://hdiconfigactions.blob.core.windows.net/linuxsetupcustomhivelibsv01/setup-customhivelibs-v01.sh"
+$scriptActionParameters = [string]::Join("", "wasbs://", $defaultBlobContainerName, "@", $jarStorageAccountName, ".blob.core.windows.net/") 
+
+$workerScriptActionName = "jardeployToWorker"
+$headScriptActionName = "jardeployToHead"
+
 
 # Create the HDInsight cluster
 New-AzureRmHDInsightClusterConfig `
@@ -73,6 +107,19 @@ New-AzureRmHDInsightClusterConfig `
     -HeadNodeSize $headNodeSize `
     -WorkerNodeSize $workerNodeSize `
     -ZookeeperNodeSize $zookeeperNodeSize `
+            | Add-AzureRmHDInsightStorage `
+                -StorageAccountName "$jarStorageAccountName.blob.core.windows.net" `
+                -StorageAccountKey $jarStorageAccountKey `
+            | Add-AzureRmHDInsightScriptAction `
+                -Name $workerScriptActionName `
+                -Uri $scriptActionURI `
+                -Parameters $scriptActionParameters `
+                -NodeType Worker `
+            | Add-AzureRmHDInsightScriptAction `
+                -Name $headScriptActionName `
+                -Uri $scriptActionURI `
+                -Parameters $scriptActionParameters `
+                -NodeType Head `
             | Add-AzureRmHDInsightComponentVersion `
                 -ComponentName "Spark" `
                 -ComponentVersion "2.2" `
