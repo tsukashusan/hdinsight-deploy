@@ -1,3 +1,13 @@
+$resourceGroupName = "<resource>"
+$location = "<location>"
+$defaultStorageAccountName = "<defaultStorageAccountName>"
+$jarStorageAccountName = "<jarStorageAccountName>"
+$clusterName = "<clusterName>"
+$clusterTypes = @("HADOOP", "SPARK", "INTERACTIVEHIVE")
+$sshPublicKey = "<sshPublicKey>"
+$jarFileDirectory = "<LocalDirectory>"
+$jarFileName = "<JarFileName>"
+
 # Login to your Azure subscription
 Login-AzureRmAccount
 # Is there an active Azure subscription?
@@ -12,13 +22,28 @@ if(-not($sub))
 # Select-AzureRmSubscription -SubscriptionId $subscriptionID
 
 # Get user input/default values
-$resourceGroupName = Read-Host -Prompt "Enter the resource group name"
-$location = Read-Host -Prompt "Enter the Azure region to create resources in"
+if ( [String]::IsNullOrEmpty($resourceGroupName) )
+{
+    $resourceGroupName = Read-Host -Prompt "Enter the resource group name"
+}
+
+if ( [String]::IsNullOrEmpty($location) )
+{
+    $location = Read-Host -Prompt "Enter the Azure region to create resources in"
+}
+
+if ( [String]::IsNullOrEmpty($defaultStorageAccountName) )
+{
+   $defaultStorageAccountName = Read-Host -Prompt "Enter the name of the storage account"
+}
+
+if ( [String]::IsNullOrEmpty($jarStorageAccountName) )
+{
+  $jarStorageAccountName = Read-Host -Prompt "Enter the name of the JAR deploy storage account"
+}
 
 # Create the resource group
 New-AzureRmResourceGroup -Name $resourceGroupName -Location $location
-
-$defaultStorageAccountName = Read-Host -Prompt "Enter the name of the storage account"
 
 # Create an Azure storae account and container
 New-AzureRmStorageAccount `
@@ -33,7 +58,7 @@ $defaultStorageContext = New-AzureStorageContext `
                                 -StorageAccountName $defaultStorageAccountName `
                                 -StorageAccountKey $defaultStorageAccountKey
 
-$jarStorageAccountName = Read-Host -Prompt "Enter the name of the JAR deploy storage account"
+
 # Create an Azure storae account and container
 New-AzureRmStorageAccount `
     -ResourceGroupName $resourceGroupName `
@@ -49,7 +74,7 @@ $jarStorageContext = New-AzureStorageContext `
                             -StorageAccountKey $jarStorageAccountKey
 
                             # Get information for the HDInsight cluster
-$clusterName = Read-Host -Prompt "Enter the name of the HDInsight cluster"
+
 # Cluster login is used to secure HTTPS services hosted on the cluster
 #$httpCredential = Get-Credential -Message "Enter Cluster login credentials" -UserName "admin"
 # SSH user is used to remotely connect to the cluster using SSH clients
@@ -71,9 +96,12 @@ $headNodeSize = "Standard_D13_V2"
 $workerNodeSize = "Standard_D14_V2"
 $zookeeperNodeSize = "Standard_A1"
 $clusterVersion = "3.6"
-$clusterType = "INTERACTIVEHIVE" # INTERACTIVEHIVE or SPARK or ...
+$clusterType = $clusterTypes[2]
 $clusterOS = "Linux"
-$sshPublicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwTXfsS4+FRigKOYxWt9NYIQ2nSEA+dRu40d2+gkYEaZEuXpTL1VO+PNHzibC9v6zKwBD2bTyvCGb88/ybB6uKicUKlZhNKZs+tSvyrhgF+15Xh/3K1gS+ZAGszt3xUBHPynM4HcOU/anx32zO+lHCRUDPkbSeRlXzUsUJ0tC0aoye9kQsh96jF9Z2OrTPL42eLmLtK+uVNHwQvrhmuYrRAdlTM1we6Brf0AqeX8t1qNTMF9oURNSAFL5S21V+gYQlXIflUSEoFpHEWy/I9Drt6OREW6alxbuTHTw8LFk0E4yIWuOUXgYsnJt84W0EElyip7LJyzEtdg06NSeVhxSB imported-openssh-key" 
+if ( [String]::IsNullOrEmpty($sshPublicKey) )
+{
+    exit 1
+}
 # Set the storage container name to the cluster name
 $defaultBlobContainerName = $clusterName
 
@@ -85,9 +113,9 @@ New-AzureStorageContainer `
 New-AzureStorageContainer `
     -Name $defaultBlobContainerName -Context $jarStorageContext -Permission Container
 
-$localFileDirectory = "C:\\Users\\shtsukam\\Documents\\git\\hdinsight-deploy\\"
+$localFileDirectory = $jarFileDirectory
 
-$blobName = "csv-serde-1.1.3-1.2.1.jar"
+$blobName = $jarFileName
 $localFile = $localFileDirectory + $blobName
 
 Set-AzureStorageBlobContent -File $localFile `
