@@ -1,10 +1,10 @@
 $resourceGroupName = "<resourceGroupName>"
-$location = @("southeastasia", "japanwest", "japaneast")[2]
+$location = @("southeastasia", "japanwest", "japaneast")[0]
 $defaultStorageAccountName = "<defaultStorageAccountName>"
 $jarStorageAccountName = "<jarStorageAccountName>"
 $clusterName = "<clusterName>"
 $clusterTypes = @("HADOOP", "SPARK", "INTERACTIVEHIVE")
-$sshPublicKey = "<sshPublicKey>" 
+$sshPublicKey = "<sshPublicKey>"
 $jarFileDirectory = "<jarFileDirectory>"
 $jarFileName = "<example) serdeJarfile>"
 

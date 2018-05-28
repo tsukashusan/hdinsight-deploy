@@ -1,12 +1,12 @@
-$resourceGroupName = "<resource>"
-$location = "<location>"
+$resourceGroupName = "<resourceGroupName>"
+$location = @("southeastasia", "japanwest", "japaneast")[1]
 $defaultStorageAccountName = "<defaultStorageAccountName>"
 $jarStorageAccountName = "<jarStorageAccountName>"
 $clusterName = "<clusterName>"
-$clusterTypes = @("HADOOP", "SPARK", "INTERACTIVEHIVE")
+$clusterTypes = @("HADOOP", "SPARK", "INTERACTIVEHIVE")[2]
 $sshPublicKey = "<sshPublicKey>"
-$jarFileDirectory = "<LocalDirectory>"
-$jarFileName = "<JarFileName>"
+$jarFileDirectory = "<jarFileDirectory>"
+$jarFileName = "<example) serdeJarfile>"
 
 # Login to your Azure subscription
 Login-AzureRmAccount
@@ -81,12 +81,12 @@ $jarStorageContext = New-AzureStorageContext `
 #$sshCredentials = Get-Credential -Message "Enter SSH user credentials"
 
 $httpUserName = "admin"
-$httpPassword = "1qaz@wsx3edC"
+$httpPassword = "<httpPassword>"
 $httpPW = ConvertTo-SecureString -String $httpPassword -AsPlainText -Force
 $httpCredential = New-Object System.Management.Automation.PSCredential($httpUserName, $httpPW)
 
 $sshUserName = "sshuser"
-$sshPassword = "1qaz@wsx3edC"
+$sshPassword = "<sshPassword>"
 $sshPW = ConvertTo-SecureString -String $sshPassword -AsPlainText -Force
 $sshCredentials = New-Object System.Management.Automation.PSCredential($sshUserName, $sshPW)
 
@@ -96,7 +96,7 @@ $headNodeSize = "Standard_D13_V2"
 $workerNodeSize = "Standard_D14_V2"
 $zookeeperNodeSize = "Standard_A1"
 $clusterVersion = "3.6"
-$clusterType = $clusterTypes[2]
+$clusterType = $clusterTypes
 $clusterOS = "Linux"
 if ( [String]::IsNullOrEmpty($sshPublicKey) )
 {
