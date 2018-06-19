@@ -1,0 +1,5 @@
+*.jar
+ edge-kafka-param.json
+ hdinsight-deploy_hdi_settings.json
+ *~
+*.swp
