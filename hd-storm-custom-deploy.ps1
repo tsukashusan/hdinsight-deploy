@@ -1,16 +1,16 @@
 $resourceGroupName = "<resourceGroupName>"
-$location = @("southeastasia", "japanwest", "japaneast")[0]
+$location = @("southeastasia", "japanwest", "japaneast")[2]
 $defaultStorageAccountName = "<defaultStorageAccountName>"
-$jarStorageAccountName = "<jarStorageAccountName>"
 $clusterName = "<clusterName>"
-$clusterTypes = @("HADOOP", "SPARK", "INTERACTIVEHIVE")
+$clusterTypes = @("HADOOP", "SPARK", "INTERACTIVEstorm", "STORM", "KAFKA")
 $sshPublicKey = "<sshPublicKey>"
-$jarFileDirectory = "<jarFileDirectory>"
-$jarFileName = "<example) serdeJarfile>"
-
+$vnetResourceGroupName = "<vnetResourceGroupName>"
+$stormSubnetAddress = "<stormSubnetAddress>"
+$stormSubnetName = "<stormSubnetName>"
+$hdiotVirtualNetwork = "<hdiotVirtualNetwork>"
 
 # Login to your Azure subscription
-Login-AzureRmAccount
+#Login-AzureRmAccount
 # Is there an active Azure subscription?
 $sub = Get-AzureRmSubscription -ErrorAction SilentlyContinue
 if(-not($sub))
@@ -38,10 +38,13 @@ if ( [String]::IsNullOrEmpty($defaultStorageAccountName) )
    $defaultStorageAccountName = Read-Host -Prompt "Enter the name of the storage account"
 }
 
-if ( [String]::IsNullOrEmpty($jarStorageAccountName) )
-{
-  $jarStorageAccountName = Read-Host -Prompt "Enter the name of the JAR deploy storage account"
-}
+# Create Subnet to VirtualNetwork
+$virtualNetwork = Get-AzureRmVirtualNetwork -Name $hdiotVirtualNetwork -ResourceGroupName $vnetResourceGroupName
+Add-AzureRmVirtualNetworkSubnetConfig -Name $stormSubnetName `
+    -VirtualNetwork $virtualNetwork -AddressPrefix $stormSubnetAddress
+$virtualNetwork = Set-AzureRmVirtualNetwork -VirtualNetwork $virtualNetwork
+$stormSubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name $stormSubnetName -VirtualNetwork $virtualNetwork
+
 
 # Create the resource group
 New-AzureRmResourceGroup -Name $resourceGroupName -Location $location
@@ -59,22 +62,7 @@ $defaultStorageContext = New-AzureStorageContext `
                                 -StorageAccountName $defaultStorageAccountName `
                                 -StorageAccountKey $defaultStorageAccountKey
 
-
-# Create an Azure storae account and container
-New-AzureRmStorageAccount `
-    -ResourceGroupName $resourceGroupName `
-    -Name $jarStorageAccountName `
-    -SkuName "Standard_LRS" `
-    -Location $location
-$jarStorageAccountKey = (Get-AzureRmStorageAccountKey `
-                            -ResourceGroupName $resourceGroupName `
-                            -Name $jarStorageAccountName)[0].Value
-
-$jarStorageContext = New-AzureStorageContext `
-                            -StorageAccountName $jarStorageAccountName `
-                            -StorageAccountKey $jarStorageAccountKey
-
-                            # Get information for the HDInsight cluster
+# Get information for the HDInsight cluster
 
 # Cluster login is used to secure HTTPS services hosted on the cluster
 #$httpCredential = Get-Credential -Message "Enter Cluster login credentials" -UserName "admin"
@@ -93,11 +81,11 @@ $sshCredentials = New-Object System.Management.Automation.PSCredential($sshUserN
 
 # Default cluster size (# of worker nodes), version, type, and OS
 $clusterSizeInNodes = 4
-$headNodeSize = "Standard_D13_V2"
-$workerNodeSize = "Standard_D14_V2"
+$headNodeSize = "Standard_A3"
+$workerNodeSize = "Standard_D3_V2"
 $zookeeperNodeSize = "Standard_A1"
 $clusterVersion = "3.6"
-$clusterType = $clusterTypes[1]
+$clusterType = $clusterTypes[3]
 $clusterOS = "Linux"
 if ( [String]::IsNullOrEmpty($sshPublicKey) )
 {
@@ -110,27 +98,8 @@ $defaultBlobContainerName = $clusterName
 New-AzureStorageContainer `
     -Name $defaultBlobContainerName -Context $defaultStorageContext 
 
-# Create a blob container. This holds the default data store for the cluster.
-New-AzureStorageContainer `
-    -Name $defaultBlobContainerName -Context $jarStorageContext -Permission Container
-
-$localFileDirectory = $jarFileDirectory
-
-$blobName = $jarFileName
-$localFile = $localFileDirectory + $blobName
-
-Set-AzureStorageBlobContent -File $localFile `
-    -Container $defaultBlobContainerName `
-    -Blob $blobName `
-    -Context $jarStorageContext 
-
-$scriptActionURI = "https://hdiconfigactions.blob.core.windows.net/linuxsetupcustomhivelibsv01/setup-customhivelibs-v01.sh"
-$scriptActionParameters = [string]::Join("", "wasbs://", $defaultBlobContainerName, "@", $jarStorageAccountName, ".blob.core.windows.net/") 
-
-$workerScriptActionName = "jardeployToWorker"
-$headScriptActionName = "jardeployToHead"
-
 # Create the HDInsight cluster
+
 New-AzureRmHDInsightClusterConfig `
     -DefaultStorageAccountName "$defaultStorageAccountName.blob.core.windows.net"  `
     -DefaultStorageAccountKey $defaultStorageAccountKey `
@@ -138,19 +107,6 @@ New-AzureRmHDInsightClusterConfig `
     -HeadNodeSize $headNodeSize `
     -WorkerNodeSize $workerNodeSize `
     -ZookeeperNodeSize $zookeeperNodeSize `
-            | Add-AzureRmHDInsightStorage `
-                -StorageAccountName "$jarStorageAccountName.blob.core.windows.net" `
-                -StorageAccountKey $jarStorageAccountKey `
-            | Add-AzureRmHDInsightScriptAction `
-                -Name $workerScriptActionName `
-                -Uri $scriptActionURI `
-                -Parameters $scriptActionParameters `
-                -NodeType Worker `
-            | Add-AzureRmHDInsightScriptAction `
-                -Name $headScriptActionName `
-                -Uri $scriptActionURI `
-                -Parameters $scriptActionParameters `
-                -NodeType Head `
             | New-AzureRmHDInsightCluster `
                 -ResourceGroupName $resourceGroupName `
                 -ClusterName $clusterName `
@@ -161,9 +117,18 @@ New-AzureRmHDInsightClusterConfig `
                 -HttpCredential $httpCredential `
                 -DefaultStorageContainer $defaultBlobContainerName `
                 -SshCredential $sshCredentials `
-                -SshPublicKey $sshPublicKey
+                -SshPublicKey $sshPublicKey `
+                -VirtualNetworkId $virtualNetwork.Id `
+                -SubnetName $stormSubnet.Id `
 
+$templateParameterObject = @{clusterName = $clusterName; _artifactsLocation = "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-hdinsight-linux-add-edge-node/"; _artifactsLocationSasToken = ""; installScriptAction = "EmptyNodeSetup.sh"}
+New-AzureRmResourceGroupDeployment -Name "edgeDeploy" `
+    -ResourceGroupName $resourceGroupName `
+    -TemplateUri https://raw.githubusercontent.com/azure/azure-quickstart-templates/master/101-hdinsight-linux-add-edge-node/azuredeploy.json `
+    -TemplateParameterObject $templateParameterObject
+                
 ####################################
 # Verify the cluster
 ####################################
 Get-AzureRmHDInsightCluster -ClusterName $clusterName
+
